@@ -1,34 +1,23 @@
 package com.skynet.cryptoapp
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import com.skynet.cryptoapp.api.ApiFactory
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
 
-    private val compositeDisposable = CompositeDisposable()
-
+    private lateinit var coinViewModel: CoinViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val disposable = ApiFactory.apiService.getTopCoinsInfo()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                Log.d("TEST_OF_LOADING_DATA",it.toString())
-            }, {
-                Log.d("TEST_OF_LOADING_DATA",it.message)
-            })
-        compositeDisposable.add(disposable)
-    }
+        coinViewModel = ViewModelProvider(this)[CoinViewModel::class.java]
+        coinViewModel.loadData()
+        coinViewModel.priceList.observe(this, Observer {
+            Log.d("TEST_OF_LOADING_DATA", "Success in activity: $it")
+        })
 
-    override fun onDestroy() {
-        super.onDestroy()
-        compositeDisposable.dispose()
     }
 }
